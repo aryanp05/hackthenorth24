@@ -5,6 +5,46 @@
     import phoenixDefenseBg from "data-base64:~assets/phoenix-defense-bg.png";
     import phoenixDefenseTable from "data-base64:~assets/phoenix-defense-table.png";
     import phoenixSlamTalk from "data-base64:~assets/phoenix-slam-talk.gif";
+    import thinking from "data-base64:~assets/thinking.mp3";
+    import bgm from "data-base64:~assets/bgm.mp3";
+
+    function scrapeCart() {
+        let text = document.getElementsByClassName("_4QenE")[0].innerText;
+        console.log(text);
+        // Extract product details using regex
+        const productRegex = /(\d)\s*([^$]*)\s*\n?\s*(\d+)\s*x\s*\n?\s*\$(\d+\.\d{2})/g;
+        const products = [];
+        let match;
+
+        while ((match = productRegex.exec(text)) !== null) {
+            let name = match[2].trim();
+
+            // Clean the product name by removing unwanted text like "low"
+            name = name.replace(/\n.*$/, "").trim();
+
+            products.push({
+                quantity: parseInt(match[3].trim(), 10),
+                name: name,
+                price: parseFloat(match[4])
+            });
+        }
+
+        // Extract subtotal, tax, and total
+        const subtotalRegex = /Subtotal\s*\(.*?\)\s*\$(\d+\.\d{2})/;
+        const taxRegex = /Estimated taxes\s*\$(\d+\.\d{2})/;
+        const totalRegex = /Total\s*CAD\s*\$(\d+\.\d{2})/;  // Adjusted for "CAD" in between
+
+        const subtotal = parseFloat(text.match(subtotalRegex)?.[1] || 0);
+        const tax = parseFloat(text.match(taxRegex)?.[1] || 0);
+        const total = parseFloat(text.match(totalRegex)?.[1] || 0);
+
+        return {
+            products,
+            subtotal,
+            tax,
+            total
+        };
+    }
 
     const objectionAnimation = async () => {
         const gif = document.createElement("img");
@@ -56,17 +96,49 @@
               <img src=${phoenixSlamTalk} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
               <img src=${phoenixDefenseTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%;">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
-                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px;">...</h1>
+                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
               </div>
           </div>
         `;
         backgroundDim.appendChild(modal);
 
-        const dialogResponse = await fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
-            method: "GET",
-            headers: {}
+        // Play background music
+        const bgmAudio = new Audio(bgm);
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.2;
+        bgmAudio.play();
+
+        const thinkingDialog = "I kindly request a brief interlude to deliberate upon this matter with the utmost care.";
+        const thinkingAudio = new Audio(thinking);
+        thinkingAudio.play();
+
+        const thinkingDialogElement = document.getElementById("dialog");
+
+        // Create a promise for the dialog update
+        const dialogUpdatePromise = new Promise<void>((resolve) => {
+            const promises = [];
+            for (let i = 0; i < thinkingDialog.length; i++) {
+                promises.push(new Promise<void>((resolve) => setTimeout(() => {
+                    thinkingDialogElement.textContent += thinkingDialog[i];
+                    resolve();
+                }, 70 * i)));
+            }
+            Promise.all(promises).then(() => resolve());
         });
-        const dialog = (await dialogResponse.json()).messages[0];
+
+        const scapeInfo = scrapeCart();
+        // Create a promise for the fetch request
+        const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
+            method: "GET",
+            headers: {
+                cart: JSON.stringify(scapeInfo),
+            }
+        }).then(response => response.json());
+
+        // Run both promises in parallel
+        const [_, dialogResponse] = await Promise.all([dialogUpdatePromise, fetchPromise]);
+
+        const dialog = dialogResponse.messages[0];
 
         const response = await fetch("https://api.elevenlabs.io/v1/text-to-speech/gkybjio2CDKP8T49JOx6", {
             method: "POST",
@@ -94,11 +166,12 @@
         const ttsAudio = new Audio(audioUrl);
         ttsAudio.play();
 
+        // TODO: Split dialog into 250 character chunks
         // Type dialog
         const dialogElement = document.getElementById("dialog");
         dialogElement.textContent = "";
         for (let i = 0; i < dialog.length; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 70));
+            await new Promise((resolve) => setTimeout(resolve, 50));
             dialogElement.textContent += dialog[i];
         }
     };
@@ -116,7 +189,7 @@
     @font-face {
         font-family: "Renogare";
         font-style: normal;
-        src: url(data-base64:~assets/Renogare-Regular.otf) format("otf");
+        src: url(data-base64:~assets/Renogare-Regular.otf) format("opentype");
     }
 </style>
 
