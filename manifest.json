@@ -1,0 +1,18 @@
+{
+    "manifest_version": 2,
+    "name": "Shopify Purchase Advisor",
+    "version": "1.4",
+    "description": "Helps with spending habits on Shopify stores",
+    "permissions": ["activeTab", "<all_urls>"],
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_end"
+      }
+    ],
+    "web_accessible_resources": [
+      "angel.png",
+      "devil.png"
+    ]
+  }
