@@ -1,35 +1,35 @@
 {
-  "name": "test",
-  "displayName": "Test",
-  "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
-  "author": "Plasmo Corp. <foss@plasmo.com>",
-  "scripts": {
-    "dev": "plasmo dev",
-    "build": "plasmo build",
-    "package": "plasmo package"
-  },
-  "dependencies": {
-    "@plasmohq/parcel-resolver-post": "^0.4.5",
-    "@szmarczak/http-timer": "^5.0.1",
-    "plasmo": "0.89.2",
-    "svelte": "4.2.9",
-    "svelte-preprocess": "5.1.3"
-  },
-  "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
-    "@types/chrome": "0.0.258",
-    "@types/node": "20.11.5",
-    "grunt-contrib-jshint": "^3.2.0",
-    "prettier": "3.2.4",
-    "typescript": "5.3.3"
-  },
-  "manifest": {
-    "host_permissions": [
-      "https://*/*"
-    ]
-  },
-  "overrides": {
-    "@parcel/watcher": "2.1.0"
-  }
+    "name": "test",
+    "displayName": "Test",
+    "version": "0.0.1",
+    "description": "A basic Plasmo extension.",
+    "author": "Plasmo Corp. <foss@plasmo.com>",
+    "scripts": {
+        "dev": "plasmo dev",
+        "build": "plasmo build",
+        "package": "plasmo package"
+    },
+    "dependencies": {
+        "@plasmohq/parcel-resolver-post": "^0.4.5",
+        "@szmarczak/http-timer": "^5.0.1",
+        "plasmo": "0.89.2",
+        "svelte": "4.2.9",
+        "svelte-preprocess": "5.1.3"
+    },
+    "devDependencies": {
+        "@ianvs/prettier-plugin-sort-imports": "4.1.1",
+        "@types/chrome": "0.0.258",
+        "@types/node": "20.11.5",
+        "grunt-contrib-jshint": "^3.2.0",
+        "prettier": "3.2.4",
+        "typescript": "5.3.3"
+    },
+    "manifest": {
+        "host_permissions": [
+            "https://*/*"
+        ]
+    },
+    "overrides": {
+        "@parcel/watcher": "2.1.0"
+    }
 }
