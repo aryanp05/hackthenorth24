@@ -6,8 +6,6 @@
     import phoenixDefenseTable from "data-base64:~assets/phoenix-defense-table.png";
     import phoenixSlamTalk from "data-base64:~assets/phoenix-slam-talk.gif";
 
-    const dialog = "Carried? Never. fieryrage never gets carried. I would personally like to thank fieryrageosu, for carrying me. Without you this team would've been nothing. On this Thanksgiving Day I will give thanks to fieryrage in the OWC tournament. Thank you.";
-
     const objectionAnimation = async () => {
         const gif = document.createElement("img");
         gif.src = objection;
@@ -58,16 +56,49 @@
               <img src=${phoenixSlamTalk} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
               <img src=${phoenixDefenseTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%;">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
-                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px;">
+                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px;">...</h1>
               </div>
           </div>
         `;
         backgroundDim.appendChild(modal);
 
+        const dialogResponse = await fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
+            method: "GET",
+            headers: {}
+        });
+        const dialog = (await dialogResponse.json()).messages[0];
+
+        const response = await fetch("https://api.elevenlabs.io/v1/text-to-speech/gkybjio2CDKP8T49JOx6", {
+            method: "POST",
+            headers: {
+                "xi-api-key": "sk_a25ba330ec35adc384040ad8e302db5c726622de2cbd84c5",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                text: dialog,
+                voice_settings: {
+                    stability: 0.3,
+                    similarity_boost: 0.3,
+                    style: 1.0,
+                }
+            }),
+        });
+
+        if (!response.ok) {
+            console.log(response.statusText);
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        console.log(audioUrl);
+        const ttsAudio = new Audio(audioUrl);
+        ttsAudio.play();
+
         // Type dialog
         const dialogElement = document.getElementById("dialog");
+        dialogElement.textContent = "";
         for (let i = 0; i < dialog.length; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 30));
+            await new Promise((resolve) => setTimeout(resolve, 70));
             dialogElement.textContent += dialog[i];
         }
     };

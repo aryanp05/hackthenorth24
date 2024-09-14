@@ -12,6 +12,7 @@
     "dependencies": {
         "@plasmohq/parcel-resolver-post": "^0.4.5",
         "@szmarczak/http-timer": "^5.0.1",
+        "elevenlabs": "^0.15.0",
         "plasmo": "0.89.2",
         "svelte": "4.2.9",
         "svelte-preprocess": "5.1.3"
