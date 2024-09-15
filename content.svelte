@@ -82,7 +82,7 @@
         return `
           <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: ${leftOffset};">
+              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
               <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
@@ -243,7 +243,7 @@
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             const ttsAudio = new Audio(audioUrl);
-            updateCharacter(1);
+            updateCharacter(1, speaker);
 
             const typeDialog = async () => {
                 const dialogElement = document.getElementById("dialog");
@@ -264,17 +264,17 @@
                     resolve(null);
                 }
             }).then(() => {
-                updateCharacter(2);
+                updateCharacter(2, speaker);
             })]);
         };
 
         let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
         for (let i = 0; i < dialogResponse.messages.length; ++i) {
             if (i == dialogResponse.messages.length - 1) {
-                await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil");
+                await showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil")
                 await new Promise(r => setTimeout(r, 5000)); // Long pause at the end
             }
-            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil"), makeTTSReq(dialogResponse.messages[i + 1], i % 2 == 1 ? devilVoice : angelVoice)]);
+            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil"), makeTTSReq(dialogResponse.messages[i+1], i%2==1? devilVoice : angelVoice)]);
             await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
             console.log(prevResponse);
         }
