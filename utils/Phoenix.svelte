@@ -38,7 +38,7 @@
     // init, talk, idle, optional: sound effect
     export const PhoenixStates = {
         "breakdown": [Breakdown, Breakdown, Breakdown],
-        "coffee":[Coffee_Stained, Coffee_Stained,Coffee_Stained_Idle],
+        //"coffee":[Coffee_Stained, Coffee_Stained,Coffee_Stained_Idle],
         "cornered":[Cornered, Cornered_Talk, Cornered],
         "headshake":[Headshake, Stand_Talk, Stand],
         "nod":[Nod, Stand_Talk, Stand],
@@ -50,7 +50,7 @@
         "smirk":[Smirk_Stand, Smirk_Talk, Smirk_Stand],
         "stand":[Stand, Stand_Talk, Stand],
         "think":[Think_Stand, Think_Talk, Think_Stand],
-        "yell":[Yell_Stand, Yell_Talk, Yell_Stand],
+        //"yell":[Yell_Stand, Yell_Talk, Yell_Stand],
         "damage":[Damage_Anim, Cornered_Talk, Cornered, Damage]
     };
     export const PhoenixBackground = Background;

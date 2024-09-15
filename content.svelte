@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { PhoenixStates, PhoenixTable, PhoenixBackground } from "./utils/Phoenix.svelte";
-    import { EdgeworthStates, EdgeworthTable, EdgeworthBackground } from "./utils/Edgeworth.svelte";
-    import { JudgeStates, JudgeTable, JudgeBackground } from "./utils/Judge.svelte";
+    import {onMount} from "svelte";
+    import {PhoenixStates, PhoenixTable, PhoenixBackground} from "./utils/Phoenix.svelte";
+    import {EdgeworthStates, EdgeworthTable, EdgeworthBackground} from "./utils/Edgeworth.svelte";
+    import {JudgeStates, JudgeTable, JudgeBackground} from "./utils/Judge.svelte";
     import objection from "data-base64:~assets/objection.gif";
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
@@ -12,6 +12,11 @@
     import gavelImage from "data-base64:~assets/gavel.webp";
     import judgeNo from "data-base64:~assets/judgeno.mp3";
     import judgeYes from "data-base64:~assets/judgeyes.mp3";
+
+    import Intro1 from "data-base64:~assets/intro1.mp3";
+    import Intro2 from "data-base64:~assets/intro2.mp3";
+    import Intro3 from "data-base64:~assets/intro3.mp3";
+
 
     let isBuying: boolean;
     const bgmAudio = new Audio(bgm);
@@ -261,8 +266,13 @@
         bgmAudio.volume = 0.2;
         bgmAudio.play();
 
-        const thinkingDialog = "I kindly request a brief interlude to deliberate upon this matter with the utmost care.";
-        const thinkingAudio = new Audio(thinking);
+        let randomNum = Math.floor(Math.random() * 3);
+        const thinkingDialog = [
+            "Dear client, I believe that your spending today is a bit excessive...",
+            "Please wait a moment while I process the information...",
+            "Allow me to inspect your cart to provide you with the best advice...",
+        ][randomNum];
+        const thinkingAudio = new Audio([Intro1, Intro2, Intro3][randomNum]);
         thinkingAudio.playbackRate = 1.2;
         const thinkingAudioPlayer = thinkingAudio.play();
 
@@ -301,15 +311,15 @@
         console.log(dialogResponse.messages);
 
         // voices for the agents
-        const angelVoice = "pNInz6obpgDQGcFmaJgB";
-        const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
+        const apiKey = "sk_02c2f1f287f973fe8cef25d337d865cbe9c0d0334824d99e";
+        const angelVoice = "UVvHXIMcmmkw3FTmxnPX";
+        const devilVoice = "oPJEXiYlAmRAxXNj4mXx";
 
         const makeTTSReq = async (text: string, voiceId: string) => {
-            console.log(text, voiceId);
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
-                    "xi-api-key": "sk_0869cc6d5ed0b7617c27f9d69e4cc21724095ac6c7cd35fb",
+                    "xi-api-key": apiKey,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -318,84 +328,99 @@
                         stability: 0.3,
                         similarity_boost: 0.3,
                         style: 1.0,
-                        speed: 1.5
                     }
                 }),
             });
-            console.log("done tts");
-            return res;
-        };
-        const updateCharacter = (stage: number, speaker: string) => {
-            stage = Math.min(stage, speaker == "angel" ? PhoenixStates[phoenixState].length - 1 : EdgeworthStates[edgeworthState].length - 1);
-            (document.getElementById("character") as HTMLImageElement).src = speaker == "angel" ? PhoenixStates[phoenixState][stage] : EdgeworthStates[edgeworthState][stage];
-        };
-        const showToUser = async (dialog: string, response: Response, speaker: string) => {
-            if (!response.ok) {
-                console.log(response.statusText);
-            }
-
-            if (speaker === "angel") {
-                phoenixState = Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)];
-                modal.innerHTML = phoenixSprite(0);
-            } else if (speaker === "devil") {
-                edgeworthState = Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)];
-                modal.innerHTML = edgeSprite(0);
-            }
-
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const ttsAudio = new Audio(audioUrl);
-            updateCharacter(1, speaker);
-
-            const typeDialog = async () => {
-                const dialogElement = document.getElementById("dialog");
-                dialogElement.textContent = "";
-                for (let i = 0; i < dialog.length; i++) {
-                    await new Promise((resolve) => setTimeout(resolve, 50));
-                    if (i % 250 === 0) {
-                        dialogElement.textContent = "";
-                    }
-                    dialogElement.textContent += dialog[i];
-                }
-            };
-            await Promise.all([typeDialog(), new Promise(async (resolve, reject) => {
-                try {
-                    ttsAudio.onended = resolve;
-                    await ttsAudio.play();
-                } catch (e) {
-                    resolve(null);
-                }
-            }).then(() => {
-                updateCharacter(2, speaker);
-            })]);
-        };
-
-        let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
-        for (let i = 0; i < dialogResponse.messages.length; ++i) {
-            if (i == dialogResponse.messages.length - 1) {
-                await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil");
-                await new Promise(r => setTimeout(r, 5000)); // Long pause at the end
-                break;
-            }
-            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil"), makeTTSReq(dialogResponse.messages[i + 1], i % 2 == 1 ? devilVoice : angelVoice)]);
-            await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
-            console.log(prevResponse);
-        }
-        modal.innerHTML = yesNoButtons();
-
-        const b1 = document.getElementById("b1");
-        const b2 = document.getElementById("b2");
-
-        b1.onclick = async () => {
-            isBuying = true;
-            await judgeAnimation(true);
-        };
-
-        b2.onclick = async () => {
-            isBuying = false;
-            await judgeAnimation(false);
-        };
+        console.log("done tts");
+        return res;
     };
+    const updateCharacter = (stage: number, speaker: string) => {
+        let States = speaker == "angel" ? PhoenixStates : EdgeworthStates;
+        let curState = speaker == "angel" ? phoenixState : edgeworthState;
+        let length = States[curState].length;
+        if (length == 4) {
+            let audio = new Audio(States[curState][3]);
+            audio.play();
+        }
+
+        stage = Math.min(stage, length - 1);
+        let element = document.getElementById("character") as HTMLImageElement;
+        element.src = "";
+        element.src = States[curState][stage];
+
+    };
+    const showToUser = async (dialog: string, response: Response, speaker: string) => {
+        if (!response.ok) {
+            console.log(response.statusText);
+        }
+
+        if (speaker === "angel") {
+            phoenixState = Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)];
+            modal.innerHTML = phoenixSprite(0);
+        } else if (speaker === "devil") {
+            edgeworthState = Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)];
+            modal.innerHTML = edgeSprite(0);
+        }
+
+        setTimeout(() => {
+        }, 1000);
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const ttsAudio = new Audio(audioUrl);
+        updateCharacter(1, speaker);
+
+        setTimeout(() => {
+        }, 1000);
+        const typeDialog = async () => {
+            const dialogElement = document.getElementById("dialog");
+            dialogElement.textContent = "";
+            for (let i = 0; i < dialog.length; i++) {
+                await new Promise((resolve) => setTimeout(resolve, 50));
+                if (i % 250 === 0) {
+                    dialogElement.textContent = "";
+                }
+                dialogElement.textContent += dialog[i];
+            }
+        };
+        await Promise.all([typeDialog(), new Promise(async (resolve, reject) => {
+            try {
+                ttsAudio.onended = resolve;
+                await ttsAudio.play();
+            } catch (e) {
+                resolve(null);
+            }
+        }).then(() => {
+            updateCharacter(2, speaker);
+        })]);
+    };
+
+    let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
+    for (let i = 0; i < dialogResponse.messages.length; ++i) {
+        if (i == dialogResponse.messages.length - 1) {
+            await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil");
+            await new Promise(r => setTimeout(r, 2000)); // Long pause at the end
+            break;
+        }
+        [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil"), makeTTSReq(dialogResponse.messages[i + 1], i % 2 == 0 ? devilVoice : angelVoice)]);
+        await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
+        console.log(prevResponse);
+    }
+    modal.innerHTML = yesNoButtons();
+
+    const b1 = document.getElementById("b1");
+    const b2 = document.getElementById("b2");
+
+    b1.onclick = async () => {
+        isBuying = true;
+        await judgeAnimation(true);
+    };
+
+    b2.onclick = async () => {
+        isBuying = false;
+        await judgeAnimation(false);
+    };
+    }
+    ;
 
     onMount(() => {
         new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {

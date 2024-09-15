@@ -37,7 +37,7 @@
         "special_2": [Special_2, Confident_Talk, Confident],
         "stand": [Stand, Stand_Talk, Stand],
         "damage": [Damage],
-        "yell": [Yell_Stand]
+        //"yell": [Yell_Stand]
     }
     export const EdgeworthBackground = Background;
     export const EdgeworthTable = Table;
