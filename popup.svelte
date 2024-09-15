@@ -61,10 +61,6 @@
 </div>
 
 <style>
-  /* Use a serif font */
-  body {
-    font-family: 'Times New Roman', serif;
-  }
 
   .popup-container {
     padding: 20px;

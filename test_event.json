@@ -1,0 +1,7 @@
+{
+    "user_id": "test_user_123",
+    "input": "launch",
+    "headers": {
+        "cart": "eyJpdGVtcyI6W3siaXRlbV9pZCI6MSwicGFyYW1ldGVyX3R5cGUiOiJhbGxpYW5jZSIsInF1YW50aXR5IjpudWxsLCJwcm9kdWN0X2lkIjoiMSJ9LHsiaXRlbV9pZCI6MiwicGFyYW1ldGVyX3R5cGUiOiJzb3BwaW5nIiwicXVhbnRpdHkiOm51bGwsInByb2R1Y3RfaWQiOiIyIn1dLCJ0b3RhbCI6MzB9"
+    }
+}
