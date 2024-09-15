@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import {PhoenixStates, PhoenixTable, PhoenixBackground} from "./utils/Phoenix.svelte";
     import {EdgeworthStates, EdgeworthTable,EdgeworthBackground} from "./utils/Edgeworth.svelte";
+    import {JudgeStates, JudgeTable, JudgeBackground} from "./utils/Judge.svelte";
     import objection from "data-base64:~assets/objection.gif";
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
@@ -228,6 +229,17 @@
                 modal.innerHTML = edgeSprite();
             }
 
+
+
+
+
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const ttsAudio = new Audio(audioUrl);
+            phoenixState[1] = 1;
+            edgeworthState[1] = 1;
+            modal.innerHTML = speaker=="angel"?phoenixSprite():edgeSprite();
+
             // Type dialog
             const dialogElement = document.getElementById("dialog");
             dialogElement.textContent = "";
@@ -241,13 +253,6 @@
                     dialogElement.textContent += dialog[i];
                 }
             };
-
-
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const ttsAudio = new Audio(audioUrl);
-            phoenixState[1] = 1;
-
             await Promise.all([typeDialog(), new Promise(async (resolve, reject) => {
                 try {
                     ttsAudio.onended = resolve;
@@ -257,6 +262,8 @@
                 }
             }).then(() => {
                 phoenixState[1] = 2;
+                edgeworthState[1] = 2;
+                modal.innerHTML = speaker=="angel"?phoenixSprite():edgeSprite();
             })]);
         };
 
