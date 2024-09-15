@@ -8,7 +8,7 @@
     import thinking from "data-base64:~assets/thinking.mp3";
     import bgm from "data-base64:~assets/bgm.mp3";
 
-    function scrapeCart() {
+    function scrapeCartShopify() {
         let text = document.getElementsByClassName("_4QenE")[0].innerText;
         // Extract product details using regex
         const productRegex = /(\d)\s*([^$]*)\s*\n?\s*(\d+)\s*x\s*\n?\s*\$(\d+\.\d{2})/g;
@@ -36,6 +36,33 @@
         const subtotal = parseFloat(text.match(subtotalRegex)?.[1] || 0);
         const tax = parseFloat(text.match(taxRegex)?.[1] || 0);
         const total = parseFloat(text.match(totalRegex)?.[1] || 0);
+
+        return {
+            products,
+            subtotal,
+            tax,
+            total
+        };
+    }
+
+    function scrapeCartAmazon() {
+        let text = document.getElementsByClassName("a-section a-spacing-mini sc-list-body sc-java-remote-feature")[0].innerText;
+
+        const productRegex = /([A-Za-z0-9 ,\-()]+)\s*\$(\d+\.\d{2})[\s\S]*?Qty:\s*(\d+)/gm;
+
+        const matches = [...text.matchAll(productRegex)];
+
+        const products = matches.map(match => ({
+            name: match[1].trim(),
+            price: parseFloat(match[2]),
+            quantity: parseInt(match[3])
+        }));
+
+        // Extract subtotal, tax, and total
+        const prices: number[] = products.map(product => product.price * product.quantity);
+        const subtotal = prices.reduce((acc, price) => acc + price, 0);
+        const tax = subtotal * 0.13;
+        const total = subtotal + tax;
 
         return {
             products,
@@ -87,7 +114,7 @@
         const audio = new Audio(phoenixObjection);
         audio.play();
 
-        const payButton = document.getElementById("checkout-pay-button");
+        const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
         payButton.innerText = "LOCKED";
         payButton.style.backgroundColor = "rgb(111,111,111)";
         payButton.style.cursor = "not-allowed";
@@ -145,12 +172,17 @@
             Promise.all(promises).then(() => resolve());
         });
 
-        const scapeInfo = scrapeCart();
+        let scrapeInfo;
+        if (!window.location.toString().toLowerCase().includes("amazon")) {
+            scrapeInfo = scrapeCartShopify();
+        } else {
+            scrapeInfo = scrapeCartAmazon();
+        }
         // Create a promise for the fetch request
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
-                cart: JSON.stringify(scapeInfo),
+                cart: JSON.stringify(scrapeInfo),
             }
         }).then(response => response.json());
 
@@ -159,15 +191,15 @@
         console.log(dialogResponse.messages);
 
         // voices for the agents
-        const angelVoice = "8nx6pkBQ3ZdSiWwftcTo";
-        const devilVoice = "8nx6pkBQ3ZdSiWwftcTo";
+        const angelVoice = "pNInz6obpgDQGcFmaJgB";
+        const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
 
         const makeTTSReq = async (text: string, voiceId: string) => {
             console.log(text, voiceId);
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
-                    "xi-api-key": "sk_e20f5c4bee8721f00915f55974e568a7a7a89c517d5413b3",
+                    "xi-api-key": "sk_0869cc6d5ed0b7617c27f9d69e4cc21724095ac6c7cd35fb",
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -209,7 +241,7 @@
                 }
                 dialogElement.textContent += dialog[i];
             }
-            console.log("done ")
+            console.log("done ");
         };
         let prevResponse = await makeTTSReq(dialogResponse.messages[0], angelVoice);
         if (!prevResponse.ok) {
@@ -224,7 +256,7 @@
             let nextReq = makeTTSReq(dialogResponse.messages[i], i % 2 == 0 ? angelVoice : devilVoice);
 
             let [_, nextResponse] = await Promise.all([curReq, nextReq]);
-            await new Promise(r => setTimeout(r, 3000));
+            setTimeout(1000);
             console.log("done all");
             prevResponse = nextResponse;
         }
@@ -232,7 +264,7 @@
 
     onMount(() => {
         new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-            const payButton = document.getElementById("checkout-pay-button");
+            const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
             payButton.setAttribute("type", "button");
             payButton.onclick = objectionAnimation;
         });
