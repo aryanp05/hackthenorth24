@@ -72,12 +72,13 @@
         };
     }
 
-    let phoenixState = ["think", 0];
-    const phoenixSprite = () => {
+    let phoenixState = "think";
+    const phoenixSprite = (stage:number) => {
+        stage = Math.min(stage, PhoenixStates[phoenixState].length - 1);
         return `
           <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${PhoenixStates[phoenixState[0]][phoenixState[1]]} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
+              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
               <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
@@ -86,12 +87,13 @@
         `;
     };
 
-    let edgeworthState = [Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)], 0];
-    const edgeSprite = () => {
+    let edgeworthState = Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)];
+    const edgeSprite = (stage:number) => {
+        stage = Math.min(stage, EdgeworthStates[edgeworthState].length - 1);
         return `
            <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto; transform:scaleX(-1)">
-              <img src=${EdgeworthStates[edgeworthState[0]][edgeworthState[1]]} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%; ">
+              <img src=${EdgeworthStates[edgeworthState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%; ">
               <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%; transform: scaleX(-1)">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
@@ -146,7 +148,7 @@
         modal.style.zIndex = "1001";
         backgroundDim.appendChild(modal);
 
-        modal.innerHTML = phoenixSprite();
+        modal.innerHTML = phoenixSprite(0);
 
         // Play background music
         const bgmAudio = new Audio(bgm);
@@ -216,35 +218,30 @@
             console.log("done tts");
             return res;
         };
+        const updateCharacter = (stage:number)=>{
+            ( document.getElementById("character") as HTMLImageElement).src = speaker=="angel"?PhoenixStates[phoenixState][stage]:EdgeworthStates[edgeworthState][stage];
+        }
         const showToUser = async (dialog: string, response: Response, speaker: string) => {
             if (!response.ok) {
                 console.log(response.statusText);
             }
 
             if (speaker === "angel") {
-                phoenixState = [Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)], 0];
-                modal.innerHTML = phoenixSprite();
+                phoenixState = Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)];
+                modal.innerHTML = phoenixSprite(0);
             } else if (speaker === "devil") {
-                edgeworthState = [Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)], 0];
-                modal.innerHTML = edgeSprite();
+                edgeworthState = Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)];
+                modal.innerHTML = edgeSprite(0);
             }
-
-
-
-
 
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             const ttsAudio = new Audio(audioUrl);
-            phoenixState[1] = 1;
-            edgeworthState[1] = 1;
-            modal.innerHTML = speaker=="angel"?phoenixSprite():edgeSprite();
-
-            // Type dialog
-            const dialogElement = document.getElementById("dialog");
-            dialogElement.textContent = "";
+            updateCharacter(1);
 
             const typeDialog = async () => {
+                const dialogElement = document.getElementById("dialog");
+                dialogElement.textContent = "";
                 for (let i = 0; i < dialog.length; i++) {
                     await new Promise((resolve) => setTimeout(resolve, 50));
                     if (i % 250 === 0) {
@@ -261,9 +258,7 @@
                     resolve(null);
                 }
             }).then(() => {
-                phoenixState[1] = 2;
-                edgeworthState[1] = 2;
-                modal.innerHTML = speaker=="angel"?phoenixSprite():edgeSprite();
+                updateCharacter(2);
             })]);
         };
 
