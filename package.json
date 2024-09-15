@@ -1,10 +1,10 @@
 {
-    "name": "Budget Defender",
-    "displayName": "Budget Defender",
-    "version": "0.0.1",
-    "description": "A chrome extension for curbing excessive online spending habits and cross-examining your cart.",
-    "author": "Alex Dubljevic, Aryan Patel, Daniel Pu, Aaron Ye",
-    "scripts": {
+  "name": "Dime Defender",
+  "displayName": "Dime Defender",
+  "version": "0.0.1",
+  "description": "A chrome extension for curbing excessive online spending habits and cross-examining your cart.",
+  "author": "Alex Dubljevic, Aryan Patel, Daniel Pu, Aaron Ye",
+  "scripts": {
         "dev": "plasmo dev",
         "build": "plasmo build",
         "package": "plasmo package"

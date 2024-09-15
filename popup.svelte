@@ -39,7 +39,7 @@
   
 
   {#if !token && !showBudgetSlider}
-    <h2 class="text-center">Budget Defender Login</h2>
+    <h2 class="text-center">Dime Defender Login</h2>
     <div class="form-container">
       <input
         type="text"
