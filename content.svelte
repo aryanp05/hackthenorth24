@@ -110,6 +110,7 @@
 
         const thinkingDialog = "I kindly request a brief interlude to deliberate upon this matter with the utmost care.";
         const thinkingAudio = new Audio(thinking);
+        thinkingAudio.playbackRate = 1.2;
         thinkingAudio.play();
 
         const thinkingDialogElement = document.getElementById("dialog");
@@ -137,6 +138,7 @@
 
         // Run both promises in parallel
         const [_, dialogResponse] = await Promise.all([dialogUpdatePromise, fetchPromise]);
+        console.log(dialogResponse.messages);
 
         const dialog = dialogResponse.messages[0];
 
