@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {onMount} from "svelte";
-    import {PhoenixStates, PhoenixTable, PhoenixBackground} from "./utils/Phoenix.svelte";
-    import {EdgeworthStates, EdgeworthTable, EdgeworthBackground} from "./utils/Edgeworth.svelte";
-    import {JudgeStates, JudgeTable, JudgeBackground} from "./utils/Judge.svelte";
+    import { onMount } from "svelte";
+    import { PhoenixStates, PhoenixTable, PhoenixBackground } from "./utils/Phoenix.svelte";
+    import { EdgeworthStates, EdgeworthTable, EdgeworthBackground } from "./utils/Edgeworth.svelte";
+    import { JudgeStates, JudgeTable, JudgeBackground } from "./utils/Judge.svelte";
     import objection from "data-base64:~assets/objection.gif";
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
@@ -311,15 +311,15 @@
         console.log(dialogResponse.messages);
 
         // voices for the agents
-        const apiKey = "sk_02c2f1f287f973fe8cef25d337d865cbe9c0d0334824d99e";
-        const angelVoice = "UVvHXIMcmmkw3FTmxnPX";
-        const devilVoice = "oPJEXiYlAmRAxXNj4mXx";
+        const angelVoice = "pNInz6obpgDQGcFmaJgB";
+        const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
 
         const makeTTSReq = async (text: string, voiceId: string) => {
+            console.log(text, voiceId);
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
-                    "xi-api-key": apiKey,
+                    "xi-api-key": "sk_0869cc6d5ed0b7617c27f9d69e4cc21724095ac6c7cd35fb",
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -328,6 +328,7 @@
                         stability: 0.3,
                         similarity_boost: 0.3,
                         style: 1.0,
+                        speed: 1.5
                     }
                 }),
             });
