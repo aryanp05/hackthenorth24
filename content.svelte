@@ -182,10 +182,12 @@
             scrapeInfo = scrapeCartAmazon();
         }
         // Create a promise for the fetch request
+        const monthlyBudget = localStorage.getItem('monthly_budget');
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
                 cart: JSON.stringify(scrapeInfo),
+                budget: monthlyBudget,
             }
         }).then(response => response.json());
 
@@ -218,7 +220,7 @@
             console.log("done tts");
             return res;
         };
-        const updateCharacter = (stage:number)=>{
+        const updateCharacter = (stage:number, speaker: string)=>{
             ( document.getElementById("character") as HTMLImageElement).src = speaker=="angel"?PhoenixStates[phoenixState][stage]:EdgeworthStates[edgeworthState][stage];
         }
         const showToUser = async (dialog: string, response: Response, speaker: string) => {
@@ -237,7 +239,7 @@
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             const ttsAudio = new Audio(audioUrl);
-            updateCharacter(1);
+            updateCharacter(1, speaker);
 
             const typeDialog = async () => {
                 const dialogElement = document.getElementById("dialog");
@@ -258,7 +260,7 @@
                     resolve(null);
                 }
             }).then(() => {
-                updateCharacter(2);
+                updateCharacter(2, speaker);
             })]);
         };
 
