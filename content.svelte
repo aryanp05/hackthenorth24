@@ -17,6 +17,7 @@
     import Intro2 from "data-base64:~assets/intro2.mp3";
     import Intro3 from "data-base64:~assets/intro3.mp3";
 
+    import { angelVoice, devilVoice, apiKey } from "~utils/keys";
 
     let isBuying: boolean;
     const bgmAudio = new Audio(bgm);
@@ -311,9 +312,6 @@
         console.log(dialogResponse.messages);
 
         // voices for the agents
-        const apiKey = "sk_bd195dbb495a2e5bf06adc2ac9962d833cac9fcdc95a7692";
-        const angelVoice = "pNInz6obpgDQGcFmaJgB";
-        const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
 
         const makeTTSReq = async (text: string, voiceId: string) => {
             console.log(text, voiceId);
