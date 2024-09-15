@@ -12,7 +12,7 @@
     import gavelImage from "data-base64:~assets/gavel.webp";
     import judgeNo from "data-base64:~assets/judgeno.mp3";
     import judgeYes from "data-base64:~assets/judgeyes.mp3";
-
+V
     let isBuying: boolean;
     const bgmAudio = new Audio(bgm);
 
@@ -286,6 +286,8 @@
         } else {
             scrapeInfo = scrapeCartAmazon();
         }
+        console.log(scrapeInfo);
+
         // Create a promise for the fetch request
         const monthlyBudget = localStorage.getItem("monthly_budget") || 250;
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
