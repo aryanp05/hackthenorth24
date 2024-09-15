@@ -311,6 +311,7 @@
         console.log(dialogResponse.messages);
 
         // voices for the agents
+        const apiKey = "sk_bd195dbb495a2e5bf06adc2ac9962d833cac9fcdc95a7692";
         const angelVoice = "pNInz6obpgDQGcFmaJgB";
         const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
 
@@ -319,7 +320,7 @@
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
-                    "xi-api-key": "sk_0869cc6d5ed0b7617c27f9d69e4cc21724095ac6c7cd35fb",
+                    "xi-api-key": apiKey,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
