@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import {PhoenixStates, PhoenixTable, PhoenixBackground} from "./utils/Phoenix.svelte";
-    import {EdgeworthStates, EdgeworthTable,EdgeworthBackground} from "./utils/Edgeworth.svelte";
-    import {JudgeStates, JudgeTable, JudgeBackground} from "./utils/Judge.svelte";
+    import { PhoenixStates, PhoenixTable, PhoenixBackground } from "./utils/Phoenix.svelte";
+    import { EdgeworthStates, EdgeworthTable, EdgeworthBackground } from "./utils/Edgeworth.svelte";
+    import { JudgeStates, JudgeTable, JudgeBackground } from "./utils/Judge.svelte";
     import objection from "data-base64:~assets/objection.gif";
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
@@ -73,12 +73,16 @@
     }
 
     let phoenixState = "think";
-    const phoenixSprite = (stage:number) => {
+    const phoenixSprite = (stage: number) => {
+        let leftOffset = -5;
+        if (stage == 0) {
+            offset = 0;
+        }
         stage = Math.min(stage, PhoenixStates[phoenixState].length - 1);
         return `
           <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
+              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: ${leftOffset};">
               <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
@@ -88,7 +92,7 @@
     };
 
     let edgeworthState = Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)];
-    const edgeSprite = (stage:number) => {
+    const edgeSprite = (stage: number) => {
         stage = Math.min(stage, EdgeworthStates[edgeworthState].length - 1);
         return `
            <div style="position: relative; width: 1000px; height: 600px;">
@@ -117,7 +121,7 @@
         const audio = new Audio(phoenixObjection);
         audio.play();
 
-        const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0)
+        const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
         payButton.innerText = "LOCKED";
         payButton.style.backgroundColor = "rgb(111,111,111)";
         payButton.style.cursor = "not-allowed";
@@ -182,7 +186,7 @@
             scrapeInfo = scrapeCartAmazon();
         }
         // Create a promise for the fetch request
-        const monthlyBudget = localStorage.getItem('monthly_budget');
+        const monthlyBudget = localStorage.getItem("monthly_budget");
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
@@ -220,9 +224,9 @@
             console.log("done tts");
             return res;
         };
-        const updateCharacter = (stage:number)=>{
-            ( document.getElementById("character") as HTMLImageElement).src = speaker=="angel"?PhoenixStates[phoenixState][stage]:EdgeworthStates[edgeworthState][stage];
-        }
+        const updateCharacter = (stage: number) => {
+            (document.getElementById("character") as HTMLImageElement).src = speaker == "angel" ? PhoenixStates[phoenixState][stage] : EdgeworthStates[edgeworthState][stage];
+        };
         const showToUser = async (dialog: string, response: Response, speaker: string) => {
             if (!response.ok) {
                 console.log(response.statusText);
@@ -267,13 +271,19 @@
         let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
         for (let i = 0; i < dialogResponse.messages.length; ++i) {
             if (i == dialogResponse.messages.length - 1) {
-                await showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil")
+                await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil");
                 await new Promise(r => setTimeout(r, 5000)); // Long pause at the end
             }
-            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil"), makeTTSReq(dialogResponse.messages[i+1], i%2==1? devilVoice : angelVoice)]);
+            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil"), makeTTSReq(dialogResponse.messages[i + 1], i % 2 == 1 ? devilVoice : angelVoice)]);
             await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
             console.log(prevResponse);
         }
+
+        // Remove modal
+        modal.remove();
+
+        // Remove background music
+        bgmAudio.pause();
     };
 
     onMount(() => {
