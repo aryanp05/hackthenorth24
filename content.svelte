@@ -1,14 +1,13 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import {PhoenixStates, PhoenixTable, PhoenixBackground} from "./utils/Phoenix.svelte";
-
     import {EdgeworthStates, EdgeworthTable,EdgeworthBackground} from "./utils/Edgeworth.svelte";
-
     import objection from "data-base64:~assets/objection.gif";
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
     import bgm from "data-base64:~assets/bgm.mp3";
-    function scrapeCart() {
+
+    function scrapeCartShopify() {
         let text = document.getElementsByClassName("_4QenE")[0].innerText;
         // Extract product details using regex
         const productRegex = /(\d)\s*([^$]*)\s*\n?\s*(\d+)\s*x\s*\n?\s*\$(\d+\.\d{2})/g;
@@ -36,6 +35,33 @@
         const subtotal = parseFloat(text.match(subtotalRegex)?.[1] || 0);
         const tax = parseFloat(text.match(taxRegex)?.[1] || 0);
         const total = parseFloat(text.match(totalRegex)?.[1] || 0);
+
+        return {
+            products,
+            subtotal,
+            tax,
+            total
+        };
+    }
+
+    function scrapeCartAmazon() {
+        let text = document.getElementsByClassName("a-section a-spacing-mini sc-list-body sc-java-remote-feature")[0].innerText;
+
+        const productRegex = /([A-Za-z0-9 ,\-()]+)\s*\$(\d+\.\d{2})[\s\S]*?Qty:\s*(\d+)/gm;
+
+        const matches = [...text.matchAll(productRegex)];
+
+        const products = matches.map(match => ({
+            name: match[1].trim(),
+            price: parseFloat(match[2]),
+            quantity: parseInt(match[3])
+        }));
+
+        // Extract subtotal, tax, and total
+        const prices: number[] = products.map(product => product.price * product.quantity);
+        const subtotal = prices.reduce((acc, price) => acc + price, 0);
+        const tax = subtotal * 0.13;
+        const total = subtotal + tax;
 
         return {
             products,
@@ -149,7 +175,12 @@
             Promise.all(promises).then(() => resolve());
         });
 
-        const scapeInfo = scrapeCart();
+        let scrapeInfo;
+        if (!window.location.toString().toLowerCase().includes("amazon")) {
+            scrapeInfo = scrapeCartShopify();
+        } else {
+            scrapeInfo = scrapeCartAmazon();
+        }
         // Create a promise for the fetch request
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
@@ -167,6 +198,7 @@
         const devilVoice = "Xb7hH8MSUJpSbSDYk0k2";
 
         const makeTTSReq = async (text: string, voiceId: string) => {
+            console.log(text, voiceId);
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
@@ -179,7 +211,7 @@
                         stability: 0.3,
                         similarity_boost: 0.3,
                         style: 1.0,
-                        speed: 2
+                        speed: 1.5
                     }
                 }),
             });
@@ -194,12 +226,14 @@
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             const ttsAudio = new Audio(audioUrl);
+
             if (speaker === "P") {
                 modal.innerHTML = phoenixSprite();
             } else if (speaker === "E") {
                 modal.innerHTML = edgeSprite();
             }
 
+            // Type dialog
             const dialogElement = document.getElementById("dialog");
             dialogElement.textContent = "";
 
