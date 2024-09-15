@@ -182,10 +182,12 @@
             scrapeInfo = scrapeCartAmazon();
         }
         // Create a promise for the fetch request
+        const monthlyBudget = localStorage.getItem('monthly_budget');
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
                 cart: JSON.stringify(scrapeInfo),
+                budget: monthlyBudget,
             }
         }).then(response => response.json());
 
