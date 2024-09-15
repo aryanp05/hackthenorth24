@@ -162,7 +162,6 @@
 
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
-        console.log(audioUrl);
         const ttsAudio = new Audio(audioUrl);
         ttsAudio.play();
 
