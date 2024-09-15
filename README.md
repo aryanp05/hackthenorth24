@@ -1,3 +1,5 @@
+Note: For eleven Labs, make a file called "keys.ts" in utils to store api keys and env variables
+
 This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
 
 ## Getting Started
