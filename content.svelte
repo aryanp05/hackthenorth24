@@ -71,15 +71,13 @@
         };
     }
 
+    let phoenixState = ["think", 0];
     const phoenixSprite = () => {
-        //pick random phoenix state
-        const phoenixState = PhoenixStates[Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)]][1];
-        console.log(phoenixState);
         return `
           <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${phoenixState} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
-              <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%;">
+              <img src=${PhoenixStates[phoenixState[0]][phoenixState[1]]} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
+              <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
               </div>
@@ -87,14 +85,13 @@
         `;
     };
 
+    let edgeworthState = [Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)], 0];
     const edgeSprite = () => {
-        const edgeworthState = EdgeworthStates[Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)]][1];
-        console.log(edgeworthState);
         return `
            <div style="position: relative; width: 1000px; height: 600px;">
-              <img src=${EdgeworthBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${edgeworthState} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
-              <img src=${EdgeworthTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%;">
+              <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto; transform:scaleX(-1)">
+              <img src=${EdgeworthStates[edgeworthState[0]][edgeworthState[1]]} alt="Image 1" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%; ">
+              <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%; transform: scaleX(-1)">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
               </div>
@@ -117,7 +114,7 @@
         const audio = new Audio(phoenixObjection);
         audio.play();
 
-        const payButton = document.getElementById("checkout-pay-button");
+        const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0)
         payButton.innerText = "LOCKED";
         payButton.style.backgroundColor = "rgb(111,111,111)";
         payButton.style.cursor = "not-allowed";
@@ -185,7 +182,7 @@
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
-                cart: JSON.stringify(scapeInfo),
+                cart: JSON.stringify(scrapeInfo),
             }
         }).then(response => response.json());
 
@@ -223,13 +220,11 @@
                 console.log(response.statusText);
             }
 
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const ttsAudio = new Audio(audioUrl);
-
-            if (speaker === "P") {
+            if (speaker === "angel") {
+                phoenixState = [Object.keys(PhoenixStates)[Math.floor(Math.random() * Object.keys(PhoenixStates).length)], 0];
                 modal.innerHTML = phoenixSprite();
-            } else if (speaker === "E") {
+            } else if (speaker === "devil") {
+                edgeworthState = [Object.keys(EdgeworthStates)[Math.floor(Math.random() * Object.keys(EdgeworthStates).length)], 0];
                 modal.innerHTML = edgeSprite();
             }
 
@@ -247,30 +242,39 @@
                 }
             };
 
-            // Play audio and type dialog simultaneously
-            await Promise.all([typeDialog(), new Promise(resolve => {
-                ttsAudio.onended = resolve;
-                ttsAudio.play().catch(e => console.error("Audio playback failed:", e));
-            })])
 
-            console.log("Audio and dialog finished");
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const ttsAudio = new Audio(audioUrl);
+            phoenixState[1] = 1;
+
+            await Promise.all([typeDialog(), new Promise(async (resolve, reject) => {
+                try {
+                    ttsAudio.onended = resolve;
+                    await ttsAudio.play();
+                } catch (e) {
+                    resolve(null);
+                }
+            }).then(() => {
+                phoenixState[1] = 2;
+            })]);
         };
 
         let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
-        console.log("done first");
         for (let i = 0; i < dialogResponse.messages.length; ++i) {
             if (i == dialogResponse.messages.length - 1) {
-                await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "P" : "E")
+                await showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil")
                 await new Promise(r => setTimeout(r, 5000)); // Long pause at the end
             }
-            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "P" : "E"), makeTTSReq(dialogResponse.messages[i+1], i % 2 == 0 ? devilVoice : angelVoice)]);
+            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil"), makeTTSReq(dialogResponse.messages[i+1], i%2==1? devilVoice : angelVoice)]);
+            await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
             console.log(prevResponse);
         }
     };
 
     onMount(() => {
         new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-            const payButton = document.getElementById("checkout-pay-button");
+            const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
             payButton.setAttribute("type", "button");
             payButton.onclick = objectionAnimation;
         });
