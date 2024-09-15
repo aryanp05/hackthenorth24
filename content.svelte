@@ -7,6 +7,15 @@
     import phoenixObjection from "data-base64:~assets/phoenix-objection.mp3";
     import thinking from "data-base64:~assets/thinking.mp3";
     import bgm from "data-base64:~assets/bgm.mp3";
+    import yesNo from "data-base64:~assets/yesno.webp";
+    import gavelSound from "data-base64:~assets/gavel.mp3";
+    import gavelImage from "data-base64:~assets/gavel.webp";
+    import judgeNo from "data-base64:~assets/judgeno.mp3";
+    import judgeYes from "data-base64:~assets/judgeyes.mp3";
+
+    let isBuying: boolean;
+    const bgmAudio = new Audio(bgm);
+
 
     function scrapeCartShopify() {
         let text = document.getElementsByClassName("_4QenE")[0].innerText;
@@ -76,13 +85,13 @@
     const phoenixSprite = (stage: number) => {
         let leftOffset = -5;
         if (stage == 0) {
-            offset = 0;
+            leftOffset = 0;
         }
         stage = Math.min(stage, PhoenixStates[phoenixState].length - 1);
         return `
           <div style="position: relative; width: 1000px; height: 600px;">
               <img src=${PhoenixBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
-              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: -5%;">
+              <img src=${PhoenixStates[phoenixState][stage]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto; top: -17.5%; left: ${leftOffset}%;">
               <img src=${PhoenixTable} alt="Image 2" style="position: absolute; width: 1000px; height: auto; top: -17.5%">
               <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 68.5%;">
                   <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
@@ -106,6 +115,100 @@
         `;
     };
 
+    async function judgeAnimation(isBuying: boolean) {
+        console.log(isBuying ? "Yes" : "No");
+        const modal = document.getElementById("modal");
+        modal.innerHTML = `
+           <div style="position: relative; width: 1000px; height: 700px;">
+              <img src=${gavelImage} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
+          </div>
+        `;
+
+        // Play audio
+        const audio = new Audio(gavelSound);
+        audio.play();
+
+        // Sleep 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        modal.innerHTML = `
+           <div style="position: relative; width: 1000px; height: 700px;">
+              <img src=${JudgeBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
+              <img src=${JudgeStates["positive"][2]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto;">
+              <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 72.5%;">
+                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;"></h1>
+              </div>
+          </div>
+        `;
+
+        let dialog = "";
+        if (isBuying) {
+            dialog = "Order! After reviewing the evidence, I’ve made my decision. While spending should be approached cautiously, this purchase doesn’t tip the scales toward excess... this time. Therefore, the court allows the user to proceed to checkout—but with discretion. Case closed!";
+        } else {
+            dialog = "After reviewing the evidence, the court has decided. While the allure of this purchase is strong, the potential for overspending cannot be ignored. The user's budget must come first, and this item does not meet the threshold of necessity. Therefore, I rule against proceeding with the purchase. The court urges restraint in this matter. Case closed!";
+        }
+
+        // Play audio
+        const audio2 = new Audio(isBuying ? judgeYes : judgeNo);
+        audio2.play();
+
+        const dialogElement = document.getElementById("dialog");
+        dialogElement.textContent = "";
+        for (let i = 0; i < dialog.length; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 65));
+            if (i % 250 === 0) {
+                dialogElement.textContent = "";
+            }
+            dialogElement.textContent += dialog[i];
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        modal.innerHTML = `
+           <div style="position: relative; width: 1000px; height: 700px;">
+              <img src=${JudgeBackground} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
+              <img src=${JudgeStates["positive"][1]} alt="Image 1" id="character" style="position: absolute; width: 1000px; height: auto;">
+              <div style="border: 4px solid white; background: rgba(0, 0, 0, 0.6); position: absolute; width: 1000px; height: 160px; top: 72.5%;">
+                  <h1 id="dialog" style="font-family: Renogare, sans-serif; color: white; padding: 8px; font-size: 24px;">...</h1>
+              </div>
+          </div>
+        `;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        if (isBuying) {
+            // Remove modal
+            modal.remove();
+
+            const backgroundDim = document.getElementById("background-dim");
+            backgroundDim.remove();
+
+            // Fix the button
+            const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
+            payButton.onclick = null;
+            payButton.setAttribute("type", "submit");
+        } else {
+            modal.remove();
+
+            const backgroundDim = document.getElementById("background-dim");
+            backgroundDim.remove();
+        }
+
+        bgmAudio.pause();
+    }
+
+    const yesNoButtons = () => {
+        return `
+           <div style="position: relative; width: 1000px; height: 600px;">
+              <img src=${yesNo} alt="Image 1" style="position: absolute; width: 1000px; height: auto;">
+              <div style="position: absolute; background-color: rgba(0, 0, 0, 0.7); width: 100%; height: auto">
+                  <h1 style="font-size: 64px; color: white; white-space: pre;">         Would you like to buy?</h1>
+              </div>
+              <button style="position: absolute; font-size: 48px; top: 60%; left: 30%; color: white; background-color: rgb(35, 220, 51); padding: 8px; border-radius: 4px" id="b1"">YES</button>
+              <button style="position: absolute; font-size: 48px; top: 60%; right: 30%; color: white; background-color: rgb(245, 66, 93); padding: 8px; border-radius: 4px" id="b2"">NO</button>
+          </div>
+        `;
+    };
+
     const objectionAnimation = async () => {
         const gif = document.createElement("img");
         gif.src = objection;
@@ -122,9 +225,6 @@
         audio.play();
 
         const payButton = document.getElementById("checkout-pay-button") ?? document.getElementsByName("proceedToRetailCheckout").item(0);
-        payButton.innerText = "LOCKED";
-        payButton.style.backgroundColor = "rgb(111,111,111)";
-        payButton.style.cursor = "not-allowed";
 
         await new Promise((resolve) => setTimeout(resolve, 1500));
         payButton.onclick = null;
@@ -132,6 +232,7 @@
 
         // Create modal
         const backgroundDim = document.createElement("div");
+        backgroundDim.id = "background-dim";
         backgroundDim.style.position = "fixed";
         backgroundDim.style.top = "0";
         backgroundDim.style.left = "0";
@@ -143,6 +244,7 @@
 
         const modal = document.createElement("div");
         modal.style.position = "fixed";
+        modal.id = "modal";
         modal.style.top = "50%";
         modal.style.left = "50%";
         modal.style.transform = "translate(-50%, -50%)";
@@ -155,7 +257,6 @@
         modal.innerHTML = phoenixSprite(0);
 
         // Play background music
-        const bgmAudio = new Audio(bgm);
         bgmAudio.loop = true;
         bgmAudio.volume = 0.2;
         bgmAudio.play();
@@ -186,7 +287,7 @@
             scrapeInfo = scrapeCartAmazon();
         }
         // Create a promise for the fetch request
-        const monthlyBudget = localStorage.getItem('monthly_budget') || 250;
+        const monthlyBudget = localStorage.getItem("monthly_budget") || 250;
         const fetchPromise = fetch("https://i9vk01x668.execute-api.us-east-2.amazonaws.com/dev/advisor", {
             method: "GET",
             headers: {
@@ -224,7 +325,8 @@
             console.log("done tts");
             return res;
         };
-        const updateCharacter = (stage: number) => {
+        const updateCharacter = (stage: number, speaker: string) => {
+            stage = Math.min(stage, speaker == "angel" ? PhoenixStates[phoenixState].length - 1 : EdgeworthStates[edgeworthState].length - 1);
             (document.getElementById("character") as HTMLImageElement).src = speaker == "angel" ? PhoenixStates[phoenixState][stage] : EdgeworthStates[edgeworthState][stage];
         };
         const showToUser = async (dialog: string, response: Response, speaker: string) => {
@@ -271,19 +373,28 @@
         let [prevResponse, t] = await Promise.all([makeTTSReq(dialogResponse.messages[0], angelVoice), thinkingAudioPlayer]);
         for (let i = 0; i < dialogResponse.messages.length; ++i) {
             if (i == dialogResponse.messages.length - 1) {
-                await showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil")
+                await showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil");
                 await new Promise(r => setTimeout(r, 5000)); // Long pause at the end
+                break;
             }
-            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i%2==0?"angel":"devil"), makeTTSReq(dialogResponse.messages[i+1], i%2==1? devilVoice : angelVoice)]);
+            [t, prevResponse] = await Promise.all([showToUser(dialogResponse.messages[i], prevResponse, i % 2 == 0 ? "angel" : "devil"), makeTTSReq(dialogResponse.messages[i + 1], i % 2 == 1 ? devilVoice : angelVoice)]);
             await new Promise(r => setTimeout(r, 2000)); // Long pause between dialogues
             console.log(prevResponse);
         }
+        modal.innerHTML = yesNoButtons();
 
-        // Remove modal
-        modal.remove();
+        const b1 = document.getElementById("b1");
+        const b2 = document.getElementById("b2");
 
-        // Remove background music
-        bgmAudio.pause();
+        b1.onclick = async () => {
+            isBuying = true;
+            await judgeAnimation(true);
+        };
+
+        b2.onclick = async () => {
+            isBuying = false;
+            await judgeAnimation(false);
+        };
     };
 
     onMount(() => {
