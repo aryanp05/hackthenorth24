@@ -1,37 +1,69 @@
-Note: For eleven Labs, make a file called "keys.ts" in utils to store api keys and env variables
+# Dime Defender
 
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+We all fall victim to impulse buying and online shopping sprees... especially in the first few weeks of university. A simple budgeting tool or just promising ourselves to spend less doesn't cut it anymore. Sometimes, we need someone — or someone's — to physically stop us from clicking that *BUY NOW* button and talk us through the purchase based on our budget and previous spending. That's where **Dime Defender** comes in.
 
-## Getting Started
+Drawing on the courtroom drama of legal battles, we infuse an element of fun and accountability into budgeting and mindful spending, so you can make better financial decisions while enjoying the process.
 
-First, make sure to replace `type="ts"` with `lang="ts"` in your Svelte components.
+![Dime Defender Logo](screenshots/DimeDefender.jpg)
 
-Second, run the development server:
+## What It Does
 
-```bash
-pnpm dev
-# or
-npm run dev
-```
+**Dime Defender** is a Chrome extension designed to help you control your online spending. Whenever you're on a Shopify or Amazon checkout page, it locks the *BUY NOW* button and throws you into a courtroom-style scenario! Two lawyers will argue your purchase:
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+- **Defense Attorney**: explaining why you should steer away from the purchase 😒.
+- **Prosecutor**: showing you some potential benefits 😏.
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+![Angel Lawyer](screenshots/lawyer1.jpg)
+![Devil Lawyer](screenshots/lawyer2.jpg)
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
+The arguments are based on your monthly budget, previous spending, and the items in your cart. By making you think twice about the pros and cons, **Dime Defender** helps you make more informed, mindful financial decisions before you proceed with any purchase.
 
-## Making production build
+![Objection!](screenshots/objection.jpg)
 
-Run the following:
+## How We Built It
 
-```bash
-pnpm build
-# or
-npm run build
-```
+The Dime Defender Chrome extension and frontend were created using **Svelte**, **Plasma**, and **Node.js** to ensure an interactive and sleek user experience. 
 
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
+The extension is connected to **AWS API Gateways**, which in turn communicate with **AWS Lambda serverless functions** for backend processing. These functions retrieve data from:
 
-## Submit to the webstores
+- **VoiceFlow** for managing the AI-driven dialogue between the two lawyers.
+- **ElevenLabs** for custom text-to-speech (TTS) voiceovers that bring the lawyers to life.
 
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+We also use **AWS RDS** and **EC2** for secure storage of user data (like budgets and spending records), ensuring a smooth, real-time experience every time you attempt to check out on any Shopify or Amazon page.
+
+![Budget](screenshots/budget.jpg)
+
+## Challenges We Ran Into
+
+Building a robust Chrome extension that communicates securely with serverless functions posed a unique challenge. We had to devise a system of **Lambda functions**, **API Gateways**, and tight integration with **VoiceFlow** to manage the interactions without exposing sensitive `api_keys`.
+
+Additionally, getting the AI lawyers to argue with distinct personalities and natural tone was no easy feat. It required extensive prompt engineering and iteration to create an engaging user experience.
+
+Debugging animation sprites, handling TTS voice overlap, and addressing latency in API calls were other major challenges we faced, but ultimately overcame.
+
+## Accomplishments That We're Proud Of
+
+One of our biggest accomplishments is the **natural conversational flow** within the extension, with the AI lawyers presenting distinct personalities. Having your cart cross-examined by two AI lawyers is a unique experience, and we’re proud of how enjoyable and engaging the final product turned out.
+
+## What We Learned
+
+We learned to create a distributed system architecture that seamlessly integrates various technologies, ensuring that each one complements the others. Our experience also highlighted the importance of prompt engineering for AI interactions, as well as the fine details required for effective voice-over implementations.
+
+Also... never eat 6.8 million Scoville hot sauce if you plan to code.
+
+## What's Next for Dime Defender
+
+The next step for **Dime Defender** is expanding its reach beyond Shopify and Amazon. We want to support more e-commerce and retail websites to help even more people curb their impulse buying and become more financially responsible.
+
+![Judge](screenshots/judge.jpg)
+![Court](screenshots/court.jpg)
+
+## Built With
+
+- **Svelte**
+- **Plasma**
+- **Node.js**
+- **AWS Lambda**
+- **AWS RDS & EC2**
+- **VoiceFlow**
+- **ElevenLabs**
